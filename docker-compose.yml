@@ -1,0 +1,8 @@
+version: "3"
+services:
+  snaba-front:
+    image: snaba/front:1.0
+    build:
+      context: .
+    ports:
+      - "10080:8080"
