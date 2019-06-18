@@ -1,8 +1,7 @@
 version: "3"
 volumes:
-  snaba-front:
-    external:
-      name: lsyncd_snaba-front
+  app:
+    driver: local
 services:
   snaba-front:
     image: snaba/front:1.0
@@ -12,4 +11,4 @@ services:
       - "13443:13443"
       - "13501:13501"
     volumes:
-      - "snaba-front:/app"
+      - "app:/app"
