@@ -1,8 +1,15 @@
 version: "3"
+volumes:
+  snaba-front:
+    external:
+      name: lsyncd_snaba-front
 services:
   snaba-front:
     image: snaba/front:1.0
     build:
       context: .
     ports:
-      - "10080:8080"
+      - "13443:13443"
+      - "13501:13501"
+    volumes:
+      - "snaba-front:/app"

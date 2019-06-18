@@ -2,20 +2,15 @@
 
 FROM node:lts-alpine
 
-RUN npm install -g http-server
+RUN npm install -g --no-optional browser-sync
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY bs-config.js ./
 
-RUN npm install --no-optional
+EXPOSE 13443
+EXPOSE 13501
 
-COPY . .
-
-RUN npm run build
-
-EXPOSE 8080
-
-CMD [ "http-server", "dist" ]
+CMD [ "browser-sync", "start", "-c", "bs-config.js" ]
 
 # END
