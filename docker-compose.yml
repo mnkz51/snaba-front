@@ -3,8 +3,8 @@ volumes:
   app:
     driver: local
 services:
-  snaba-front:
-    image: snaba/front:1.0
+  app:
+    image: snaba/front:dev
     build:
       context: .
     ports:

@@ -6,6 +6,9 @@ module.exports = {
         baseDir: "./dist"
     },
     port: 13443,
-    https: true,
+    https: {
+        key: "/etc/ssl/dev-server.key",
+        cert: "/etc/ssl/dev-server.crt",
+    },
     open: false
 };
