@@ -9,6 +9,7 @@ module.exports = {
         filename: 'main.[hash].js',
         path: path.resolve(__dirname, 'dist')
     },
+    devtool: 'source-map',
     module: {
         rules: [
             {
@@ -46,6 +47,13 @@ module.exports = {
                 {
                     from: 'public',
                     to: '.',
+                    ignore: [
+                        '.DS_Store'
+                    ]
+                },
+                {
+                    from: 'src/textures',
+                    to: 'textures',
                     ignore: [
                         '.DS_Store'
                     ]
