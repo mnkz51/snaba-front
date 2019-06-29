@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+// FIXME: 三人称視点にしたいしグルグルしたくない
+
 export default function(camera) {
 	this.camera = camera;
 
@@ -10,7 +12,6 @@ export default function(camera) {
 	this.movementSpeed = 100.0;
 	this.lookSpeed = 0.125;
 
-	this.lookVertical = true;
 	this.autoForward = false;
 
 	this.activeLook = true;
@@ -36,9 +37,6 @@ export default function(camera) {
 
 	this.mouseDragOn = false;
 
-	this.viewHalfX = 0;
-	this.viewHalfY = 0;
-
 	// private variables
 
 	var lat = 0;
@@ -57,22 +55,6 @@ export default function(camera) {
 	}
 
 	//
-
-	this.handleResize = function () {
-
-		if ( this.domElement === document ) {
-
-			this.viewHalfX = window.innerWidth / 2;
-			this.viewHalfY = window.innerHeight / 2;
-
-		} else {
-
-			this.viewHalfX = this.domElement.offsetWidth / 2;
-			this.viewHalfY = this.domElement.offsetHeight / 2;
-
-		}
-
-	};
 
 	this.onMouseDown = function ( event ) {
 
@@ -122,18 +104,8 @@ export default function(camera) {
 
 	this.onMouseMove = function ( event ) {
 
-		if ( this.domElement === document ) {
-
-			this.mouseX = event.pageX - this.viewHalfX;
-			this.mouseY = event.pageY - this.viewHalfY;
-
-		} else {
-
-			this.mouseX = event.pageX - this.domElement.offsetLeft - this.viewHalfX;
-			this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
-
-		}
-
+			this.mouseX += event.movementX;
+			this.mouseY += event.movementY;
 	};
 
 	this.onKeyDown = function ( event ) {
@@ -252,8 +224,12 @@ export default function(camera) {
 
 			}
 
-			lon -= this.mouseX * actualLookSpeed;
-			if ( this.lookVertical ) lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
+			// lon -= this.mouseX * actualLookSpeed;
+			lon -= this.mouseX * 0.4;
+            this.mouseX = 0;
+            // lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
+            lat -= this.mouseY * 0.4;
+            this.mouseY = 0;
 
 			lat = Math.max( - 85, Math.min( 85, lat ) );
 
@@ -329,8 +305,6 @@ export default function(camera) {
 		lon = THREE.Math.radToDeg( spherical.theta );
 
 	}
-
-	this.handleResize();
 
 	setOrientation( this );
 
