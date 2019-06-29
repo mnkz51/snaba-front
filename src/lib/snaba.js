@@ -7,6 +7,10 @@ export default class {
   // constructor
   constructor(container) {
 
+    // funcs
+    this.onLock = null;
+    this.onUnlock = null;
+
     // scene
     this.scene = new THREE.Scene();
 
@@ -21,14 +25,15 @@ export default class {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(this.renderer.domElement);
 
-    // add event listener
-    window.addEventListener('resize', e => this.resize(e));
-
     // universe
     this.universe = new Universe(this.scene, this.camera);
 
     // clock
     this.clock = new THREE.Clock();
+
+    // add event listener
+    window.addEventListener('resize', e => this.resize(e), false);
+    document.addEventListener('pointerlockchange', e => this.locker(e), false);
   }
 
   // resize
@@ -42,5 +47,25 @@ export default class {
   update() {
     this.universe.update(this.clock.getDelta());
     this.renderer.render(this.scene, this.camera);
+  }
+
+  // lock
+  lock() {
+    this.renderer.domElement.requestPointerLock();
+  }
+
+  // locker
+  locker() {
+    if (document.pointerLockElement === this.renderer.domElement) {
+      if (this.onLock !== null) {
+        this.onLock();
+      }
+      this.universe.start();
+    } else {
+      if (this.onUnlock !== null) {
+        this.onUnlock();
+      }
+      this.universe.stop();
+    }
   }
 };

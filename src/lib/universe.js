@@ -36,4 +36,14 @@ export default class {
     this.timezone.update(delta);
     this.guest.update(delta);
   }
+
+  // start
+  start() {
+    this.guest.enabled = true;
+  }
+
+  // stop
+  stop() {
+    this.guest.enabled = false;
+  }
 };
