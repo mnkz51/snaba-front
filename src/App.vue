@@ -5,7 +5,7 @@
         <span class="sub-heading">Click to play</span>
         <br/>
         <br/>
-        Move: W, A, S, D<br/>
+        Move: w, a, s, d<br/>
         Jump: Space<br/>
         Look: Mouse<br/>
       </div>
