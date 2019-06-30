@@ -22,9 +22,9 @@ export default class {
     this.world = new World();
     this.world.create();
 
-    this.guest = new Guest(this.camera);
+    this.guest = new Guest(this.scene, this.camera);
     this.camera.position.x = this.world.halfWidth * PIECE;
-    this.camera.position.y = this.world.height(this.world.halfWidth, this.world.halfDepth) * PIECE + 200;
+    this.camera.position.y = this.world.height(this.world.halfWidth, this.world.halfDepth) * PIECE + 300;
     this.camera.position.z = this.world.halfDepth * PIECE;
 
     this.visualizer = new Visualizer();
@@ -37,13 +37,13 @@ export default class {
     this.guest.update(delta);
   }
 
-  // start
-  start() {
+  // resume
+  resume() {
     this.guest.enabled = true;
   }
 
-  // stop
-  stop() {
+  // pause
+  pause() {
     this.guest.enabled = false;
   }
 };

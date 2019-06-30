@@ -33,14 +33,8 @@ export default class {
 
     // add event listener
     window.addEventListener('resize', e => this.resize(e), false);
+    document.addEventListener("contextmenu", e => this.nomenu(e), false);
     document.addEventListener('pointerlockchange', e => this.locker(e), false);
-  }
-
-  // resize
-  resize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
   // update
@@ -54,18 +48,30 @@ export default class {
     this.renderer.domElement.requestPointerLock();
   }
 
+  // resize
+  resize() {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  // no menu
+  nomenu(ev) {
+    ev.preventDefault();
+  }
+
   // locker
   locker() {
     if (document.pointerLockElement === this.renderer.domElement) {
       if (this.onLock !== null) {
         this.onLock();
       }
-      this.universe.start();
+      this.universe.resume();
     } else {
       if (this.onUnlock !== null) {
         this.onUnlock();
       }
-      this.universe.stop();
+      this.universe.pause();
     }
   }
 };

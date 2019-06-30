@@ -2,6 +2,8 @@ import * as THREE from "three";
 
 import Combinator from "./combinator.js";
 
+const PI_2 = Math.PI / 2;
+
 // FIXME : 行列
 
 const loader = new THREE.TextureLoader();
@@ -15,15 +17,15 @@ const matrix = new THREE.Matrix4();
 const PIECE = 100;
 
 const pxGeometry = new THREE.PlaneBufferGeometry(PIECE, PIECE);
-pxGeometry.rotateY(Math.PI / 2);
+pxGeometry.rotateY(PI_2);
 pxGeometry.translate(PIECE / 2, 0, 0);
 
 const nxGeometry = new THREE.PlaneBufferGeometry(PIECE, PIECE);
-nxGeometry.rotateY(- Math.PI / 2);
+nxGeometry.rotateY(- PI_2);
 nxGeometry.translate(- PIECE / 2, 0, 0);
 
 const pyGeometry = new THREE.PlaneBufferGeometry(PIECE, PIECE);
-pyGeometry.rotateX(- Math.PI / 2);
+pyGeometry.rotateX(- PI_2);
 pyGeometry.translate(0, PIECE / 2, 0);
 
 const pzGeometry = new THREE.PlaneBufferGeometry(PIECE, PIECE);

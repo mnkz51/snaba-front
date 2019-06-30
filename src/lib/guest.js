@@ -2,80 +2,72 @@ import * as THREE from "three";
 
 // FIXME : 三人称視点
 
-let lat = 0;
-let lon = 0;
+const PI_2 = Math.PI / 2;
 
-let lookDirection = new THREE.Vector3();
-let spherical = new THREE.Spherical();
-let target = new THREE.Vector3();
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+const velocity = new THREE.Vector3();
+const direction = new THREE.Vector3();
 
-let targetPosition = new THREE.Vector3();
-
-function bind(scope, fn) {
-  return function () {
-    fn.apply(scope, arguments);
-  };
-}
-
-let _onContextMenu;
-let _onMouseMove;
-let _onKeyDown;
-let _onKeyUp;
+const raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0), 0, 100);
 
 export default class {
 
   // constructor
-  constructor(camera) {
+  constructor(scene, camera) {
 
+    this.scene = scene;
     this.camera = camera;
 
     this.enabled = false;
 
-    this.movementSpeed = 100.0;
-    this.lookSpeed = 0.125;
-
-    this.autoForward = false;
-
-    this.heightSpeed = false;
-    this.heightCoef = 1.0;
-    this.heightMin = 0.0;
-    this.heightMax = 1.0;
-
-    this.constrainVertical = false;
-    this.verticalMin = 0;
-    this.verticalMax = Math.PI;
-
-    this.autoSpeedFactor = 0.0;
-
-    this.mouseX = 0;
-    this.mouseY = 0;
-
     this.moveForward = false;
-    this.moveBackward = false;
     this.moveLeft = false;
+    this.moveBackward = false;
     this.moveRight = false;
+    this.canJump = false;
 
     this.update();
 
-    _onContextMenu = bind(this, this.onContextMenu);
-    _onMouseMove = bind(this, this.onMouseMove);
-    _onKeyDown = bind(this, this.onKeyDown);
-    _onKeyUp = bind(this, this.onKeyUp);
-
-    document.addEventListener("contextmenu", _onContextMenu, false);
-    document.addEventListener("mousemove", _onMouseMove, false);
-    window.addEventListener("keydown", _onKeyDown, false);
-    window.addEventListener("keyup", _onKeyUp, false);
-
-    this.setOrientation();
+    window.addEventListener("keydown", e => this.onKeyDown(e), false);
+    window.addEventListener("keyup", e => this.onKeyUp(e), false);
+    document.addEventListener("mousemove", e => this.onMouseMove(e), false);
   }
 
-  onMouseMove(ev) {
+  update(delta) {
+
     if (this.enabled === false) {
       return;
     }
-    this.mouseX += ev.movementX;
-    this.mouseY += ev.movementY;
+
+    raycaster.ray.origin.copy(this.camera.position);
+    raycaster.ray.origin.y -= 50;
+
+    let intersections = raycaster.intersectObjects(this.scene.children);
+    let onObject = intersections.length > 0;
+
+    velocity.z -= velocity.z * 10.0 * delta;
+    velocity.x -= velocity.x * 10.0 * delta;
+    velocity.y -= 9.8 * 10.0 * delta;
+
+    direction.z = Number(this.moveForward) - Number(this.moveBackward);
+    direction.x = Number(this.moveLeft) - Number(this.moveRight);
+    direction.normalize();
+
+    if (this.moveForward || this.moveBackward) {
+      velocity.z -= direction.z * 100.0 * delta;
+    }
+    if (this.moveLeft || this.moveRight) {
+      velocity.x -= direction.x * 100.0 * delta;
+    }
+    if (onObject === true) {
+      velocity.y = Math.max(0, velocity.y);
+      this.canJump = true;
+    }
+
+    let y = this.camera.position.y;
+    this.camera.translateZ(velocity.z);
+    this.camera.translateX(velocity.x);
+    this.camera.position.y = y + velocity.y;
   }
 
   onKeyDown(ev) {
@@ -96,15 +88,11 @@ export default class {
       case 68:  // d
         this.moveRight = true;
         break;
-      case 82:  // r
-        this.moveUp = true;
-        break;
-      case 70:  // f
-        this.moveDown = true;
-        break;
       case 32:  // space
-        // if (this.canJump === true) velocity.y += 350;
-        // this.canJump = false;
+        if (this.canJump === true && velocity.y === 0) {
+          velocity.y += 40;
+        }
+        this.canJump = false;
         break;
     }
   }
@@ -127,94 +115,27 @@ export default class {
       case 68:  // d
         this.moveRight = false;
         break;
-      case 82:  // r
-        this.moveUp = false;
-        break;
-      case 70:  // f
-        this.moveDown = false;
-        break;
       case 32:  // space
         break;
     }
   }
 
-  onContextMenu(ev) {
-    ev.preventDefault();
-  }
+  onMouseMove(ev) {
 
-  lookAt(x, y, z) {
-    if (x.isVector3) {
-      target.copy(x);
-    } else {
-      target.set(x, y, z);
-    }
-    this.camera.lookAt(target);
-    this.setOrientation();
-  }
-
-  update(delta) {
     if (this.enabled === false) {
       return;
     }
-    if (this.heightSpeed) {
-      let y = THREE.Math.clamp(this.camera.position.y, this.heightMin, this.heightMax);
-      let heightDelta = y - this.heightMin;
-      this.autoSpeedFactor = delta * (heightDelta * this.heightCoef);
-    } else {
-      this.autoSpeedFactor = 0.0;
-    }
-    let actualMoveSpeed = delta * this.movementSpeed;
-    if (this.moveForward || (this.autoForward && ! this.moveBackward)) {
-      this.camera.translateZ(- (actualMoveSpeed + this.autoSpeedFactor));
-    }
-    if (this.moveBackward) {
-      this.camera.translateZ(actualMoveSpeed);
-    }
-    if (this.moveLeft) {
-      this.camera.translateX(- actualMoveSpeed);
-    }
-    if (this.moveRight) {
-      this.camera.translateX(actualMoveSpeed);
-    }
-    if (this.moveUp) {
-      this.camera.translateY(actualMoveSpeed);
-    }
-    if (this.moveDown) {
-      this.camera.translateY(- actualMoveSpeed);
-    }
-    let actualLookSpeed = delta * this.lookSpeed;
-    let verticalLookRatio = 1;
-    if (this.constrainVertical) {
-      verticalLookRatio = Math.PI / (this.verticalMax - this.verticalMin);
-    }
-    // lon -= this.mouseX * actualLookSpeed;
-    lon -= this.mouseX * 0.4;
-    this.mouseX = 0;
-    // lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
-    lat -= this.mouseY * 0.4;
-    this.mouseY = 0;
-    lat = Math.max(- 85, Math.min(85, lat));
-    let phi = THREE.Math.degToRad(90 - lat);
-    let theta = THREE.Math.degToRad(lon);
-    if (this.constrainVertical) {
-      phi = THREE.Math.mapLinear(phi, 0, Math.PI, this.verticalMin, this.verticalMax);
-    }
-    var position = this.camera.position;
-    targetPosition.setFromSphericalCoords(1, phi, theta).add(position);
-    this.camera.lookAt(targetPosition);
-  }
 
-  dispose() {
-    document.removeEventListener("contextmenu", _onContextMenu, false);
-    document.removeEventListener("mousemove", _onMouseMove, false);
-    window.removeEventListener("keydown", _onKeyDown, false);
-    window.removeEventListener("keyup", _onKeyUp, false);
-  }
+    let movementX = ev.movementX || ev.mozMovementX || ev.webkitMovementX || 0;
+    let movementY = ev.movementY || ev.mozMovementY || ev.webkitMovementY || 0;
 
-  setOrientation() {
-    lookDirection.set(0, 0, -1).applyQuaternion(this.camera.quaternion);
-    spherical.setFromVector3(lookDirection);
-    lat = 90 - THREE.Math.radToDeg(spherical.phi);
-    lon = THREE.Math.radToDeg(spherical.theta);
+    euler.setFromQuaternion(this.camera.quaternion);
+
+    euler.y -= movementX * 0.002;
+    euler.x -= movementY * 0.002;
+
+    euler.x = Math.max(- PI_2, Math.min(PI_2, euler.x));
+
+    this.camera.quaternion.setFromEuler(euler);
   }
 };
